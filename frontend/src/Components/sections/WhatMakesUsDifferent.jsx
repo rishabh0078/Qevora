@@ -43,7 +43,7 @@ const WhatMakesUsDifferent = () => {
     return (
         <section id="difference" className="section bg-white">
             <div className="container">
-                <div className="section-header">
+                <div className="section-header reveal-on-scroll">
                     <span className="section-eyebrow">Why Choose Us</span>
                     <h2>The QEVORA Standard</h2>
                     <p>
@@ -52,9 +52,9 @@ const WhatMakesUsDifferent = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-4 feature-grid">
+                <div className="grid grid-4 feature-grid reveal-on-scroll">
                     {differentiators.map((item, index) => (
-                        <div key={index} className="feature-card">
+                        <div key={index} className="feature-card stagger-child">
                             <div className="feature-icon-wrapper">
                                 {item.icon}
                             </div>

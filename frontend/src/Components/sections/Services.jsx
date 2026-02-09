@@ -1,33 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Services = () => {
-    const services = [
-        {
-            title: 'Wedding Venue Websites',
-            description: 'Elegant, conversion-focused websites that showcase your venue and help couples envision their perfect day.',
-            features: ['Virtual venue tours', 'Package & pricing displays', 'Inquiry & booking forms', 'Photo & video galleries']
-        },
-        {
-            title: 'Hotel & Resort Websites',
-            description: 'Premium digital experiences that reflect your brand and drive direct bookings.',
-            features: ['Direct booking integration', 'Room showcase & amenities', 'Guest experience highlights', 'Special offers management']
-        },
-        {
-            title: 'Custom Web Applications',
-            description: 'Tailored solutions including booking systems, event management dashboards, and guest portals.',
-            features: ['Booking management systems', 'Event calendars', 'Admin dashboards', 'CRM integration']
-        },
-        {
-            title: 'Maintenance & Support',
-            description: 'Ongoing support to keep your website secure, fast, and updated with fresh content.',
-            features: ['Security updates', 'Content updates', 'SEO optimization', 'Technical support']
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchServices();
+    }, []);
+
+    const fetchServices = async () => {
+        try {
+            const res = await fetch('/api/services');
+            const data = await res.json();
+            console.log('Services fetched:', data);
+            console.log('Number of services:', data.length);
+            setServices(data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching services:', err);
+            setLoading(false);
         }
-    ];
+    };
+
+    // Trigger scroll reveal animation after services load
+    useEffect(() => {
+        if (!loading && services.length > 0) {
+            // Small delay to ensure DOM is updated
+            setTimeout(() => {
+                const serviceElements = document.querySelectorAll('#services .reveal-on-scroll');
+                serviceElements.forEach(el => {
+                    el.classList.add('is-visible');
+                });
+            }, 100);
+        }
+    }, [loading, services]);
+
+    if (loading) {
+        return (
+            <section id="services" className="section">
+                <div className="container">
+                    <div className="section-header reveal-on-scroll">
+                        <h2>Our Services</h2>
+                        <p>Loading services...</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section id="services" className="section">
             <div className="container">
-                <div className="section-header">
+                <div className="section-header reveal-on-scroll">
                     <h2>Our Services</h2>
                     <p>
                         We build premium websites using modern technology, ensuring your digital
@@ -35,19 +59,39 @@ const Services = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-2">
-                    {services.map((service, index) => (
-                        <div key={index} className="service-card">
-                            <h3>{service.title}</h3>
-                            <p>{service.description}</p>
-                            <ul>
-                                {service.features.map((feature, idx) => (
-                                    <li key={idx}>{feature}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </div>
+                {services.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                        <p>No services available at the moment.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-2 service-grid reveal-on-scroll">
+                        {services.map((service, index) => {
+                            console.log(`Rendering service ${index}:`, service);
+                            return (
+                                <div key={service.id || index} className="service-card stagger-child">
+                                    <span className="service-number">0{index + 1}</span>
+                                    {service.icon && (
+                                        <div style={{ fontSize: '2rem', marginBottom: '10px' }}>
+                                            {service.icon}
+                                        </div>
+                                    )}
+                                    <h3>{service.title}</h3>
+                                    <p>{service.description}</p>
+                                    {service.features && service.features.length > 0 && (
+                                        <ul className="service-features">
+                                            {service.features.map((feature, idx) => (
+                                                <li key={idx}>
+                                                    <span className="check-icon">✓</span>
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </section>
     );

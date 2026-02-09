@@ -1,95 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Portfolio = () => {
-    // State to track number of visible items
-    const [visibleCount, setVisibleCount] = useState(3);
+    const [selectedProject, setSelectedProject] = useState(null);
+    const [projects, setProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Placeholder portfolio items - adding more to demonstrate Load More
-    const projects = [
-        {
-            title: 'Grand Palace Banquet',
-            category: 'Wedding Venue',
-            image: null
-        },
-        {
-            title: 'Royal Heritage Hotel',
-            category: 'Hotel',
-            image: null
-        },
-        {
-            title: 'Garden View Resort',
-            category: 'Resort',
-            image: null
-        },
-        {
-            title: 'The Wedding Manor',
-            category: 'Wedding Venue',
-            image: null
-        },
-        {
-            title: 'Emerald Bay Resort',
-            category: 'Resort',
-            image: null
-        },
-        {
-            title: 'Sapphire Convention Center',
-            category: 'Wedding Venue',
-            image: null
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const fetchProjects = async () => {
+        try {
+            const res = await fetch('/api/projects');
+            if (res.ok) {
+                const data = await res.json();
+                setProjects(data);
+            }
+        } catch (err) {
+            console.error('Error fetching projects:', err);
+        } finally {
+            setLoading(false);
         }
-    ];
-
-    const handleLoadMore = () => {
-        setVisibleCount(prev => prev + 3);
     };
+
+    const openModal = (project) => {
+        setSelectedProject(project);
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+        setSelectedProject(null);
+        document.body.style.overflow = 'unset';
+    };
+
+    // Helper to format image URL
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('/images')) return path;
+        const cleanPath = path.replace(/\\/g, '/');
+        return cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+    };
+
+    if (loading) {
+        return (
+            <section id="portfolio" className="section bg-cream">
+                <div className="container">
+                    <div className="section-header">
+                        <span className="section-eyebrow">Our Work</span>
+                        <h2>Featured Projects</h2>
+                        <p>Loading...</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section id="portfolio" className="section bg-cream">
             <div className="container">
                 <div className="section-header">
-                    <h2>Our Portfolio</h2>
+                    <span className="section-eyebrow">Our Work</span>
+                    <h2>Featured Projects</h2>
                     <p>
-                        A selection of premium websites we have crafted for wedding venues
-                        and hotels across the country.
+                        Explore our collection of premium digital experiences for the
+                        hospitality industry.
                     </p>
                 </div>
 
-                {/* Changed to grid-3 for better layout with 3 items */}
-                <div className="grid grid-3">
-                    {projects.slice(0, visibleCount).map((project, index) => (
-                        <div key={index} className="portfolio-card">
-                            {/* Placeholder background */}
-                            <div style={{
-                                width: '100%',
-                                height: '100%',
-                                background: `linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <span style={{ fontSize: '3rem', opacity: 0.3 }}>
-                                    {project.category === 'Hotel' || project.category === 'Resort' ? '🏨' : '💒'}
-                                </span>
+                <div className="portfolio-grid">
+                    {projects.map((project, index) => {
+                        console.log('Project data:', project); // Debug log
+                        return (
+                            <div
+                                key={project.id || index}
+                                className="portfolio-item"
+                                onClick={() => openModal(project)}
+                            >
+                                <div className="portfolio-item-image">
+                                    <img src={getImageUrl(project.image)} alt={project.title} />
+                                    <div className="portfolio-overlay-hover">
+                                        <span>View Project</span>
+                                    </div>
+                                </div>
+                                <div className="portfolio-item-content" style={{
+                                    padding: '24px',
+                                    textAlign: 'center',
+                                    background: '#fff'
+                                }}>
+                                    <h3 style={{
+                                        color: '#1a1a1a',
+                                        fontSize: '1.25rem',
+                                        marginBottom: '8px'
+                                    }}>
+                                        {project.title || 'No Title'}
+                                    </h3>
+                                    <p style={{
+                                        color: '#b8965c',
+                                        fontSize: '0.85rem',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.1em'
+                                    }}>
+                                        {project.category || 'No Category'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="portfolio-overlay">
-                                <h4>{project.title}</h4>
-                                <p>{project.category}</p>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
-
-                {/* Load More Button */}
-                {visibleCount < projects.length && (
-                    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                        <button
-                            onClick={handleLoadMore}
-                            className="btn-outline"
-                        >
-                            Load More Projects
-                        </button>
-                    </div>
-                )}
             </div>
+
+            {/* Project Modal */}
+            {selectedProject && (
+                <div className="project-modal" onClick={closeModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <button className="modal-close" onClick={closeModal}>&times;</button>
+
+                        <div className="modal-header">
+                            <h3>{selectedProject.title}</h3>
+                            <p>{selectedProject.category}</p>
+                        </div>
+
+                        <div className="modal-gallery">
+                            <div className="modal-image-wrapper">
+                                <img src={getImageUrl(selectedProject.image)} alt="Main view" />
+                            </div>
+                            {selectedProject.gallery && selectedProject.gallery.map((img, idx) => (
+                                <div key={idx} className="modal-image-wrapper">
+                                    <img src={getImageUrl(img)} alt={`${selectedProject.title} view ${idx + 1}`} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

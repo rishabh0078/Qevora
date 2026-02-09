@@ -25,7 +25,7 @@ const Enquiry = () => {
     return (
         <section id="enquiry" className="section enquiry-section">
             <div className="container">
-                <div className="enquiry-grid">
+                <div className="enquiry-grid reveal-on-scroll">
                     <div className="enquiry-info">
                         <h2>Let's Build Something Beautiful</h2>
                         <p>
